@@ -1,19 +1,14 @@
-# alpaca-opt-6.7b
+# OPT Alpaca Training (WIP)
 
-Training and inference code for [OPT](https://ai.facebook.com/blog/democratizing-access-to-large-scale-language-models-with-opt-175b/) models based on the [Alpaca](https://crfm.stanford.edu/2023/03/13/alpaca.html) training protocol. You can get the trained model
-from the huggingface hub:
-
-```python
-from transfomers import OPTForCausalLM, AutoTokenizer
-
-model = OPTForCausalLM.from_pretrained(
-    "Manuel030/alpaca-opt-6.7b",
-    )
-tokenizer = AutoTokenizer.from_pretrained("Manuel030/alpaca-opt-6.7b")
+Training and inference code for [OPT](https://ai.facebook.com/blog/democratizing-access-to-large-scale-language-models-with-opt-175b/) models based on the [Alpaca](https://crfm.stanford.edu/2023/03/13/alpaca.html) training protocol.
+### Usage
 ```
-
-### Why?
-Most base model are based on Llama and hence do not have a permissive license.  
+python train.py --base-model huggingface/modelname --dataset huggingface/datasetname --epochs number of epochs to train --output trained model name
+```
+### Example
+```
+python train.py --base-model facebook/opt-1.3b --dataset "psmathur/alpaca_orca" --output opt-orca-1.3b --epochs 3
+```
 
 ### Outputs
 ```
@@ -26,9 +21,8 @@ Response: Alpacas are a species of large South American camelids. They are chara
 Instruction: Tell me about the president of Mexico in 2019.
 
 Response: The president of Mexico in 2019 is Andres Manuel Lopez Obrador (AMLO), who took office on December 1, 2018. AMLO is a leftist politician and former mayor of Mexico City. He is known for his populist platform and his opposition to the country's political establishment. He has promised to bring about a more equal and just society and to address the problems of corruption and inequality. AMLO has also promised to address the country's problems of crime, violence, and poverty. He has also been critical of the United States' immigration policy and has pledged to protect the rights of migrants and asylum seekers. He has also promised to fight corruption and to reduce the country's dependence on foreign oil.
-```
-
-Sucks at writing code though. 
+``` 
 
 ### Credits
 - [tloen/alpaca-lora](https://github.com/tloen/alpaca-lora)
+- [Manuel030/alpaca-opt](https://github.com/Manuel030/alpaca-opt)
