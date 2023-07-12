@@ -51,7 +51,7 @@ LORA_ALPHA = 16
 LORA_DROPOUT = 0.05
 
 if torch.cuda.is_available():
-    print('Torch Detected\n')
+    print('Torch & Cuda Detected')
     print('Number of GPUs: ', torch.cuda.device_count())
     for i in range(torch.cuda.device_count()):
         print(f'GPU Name [{i}]: ', torch.cuda.get_device_name(i))
@@ -65,6 +65,7 @@ tokenizer = AutoTokenizer.from_pretrained(
     padding_side="right",
     use_fast=False,
 )
+tokenizer.save_pretrained(OUTPUT_PATH)
 
 #if tokenizer.pad_token is None:
 #    tokenizer.add_special_tokens({'pad_token': '[PAD]'})
@@ -140,3 +141,4 @@ model.config.use_cache = False
 trainer.train(resume_from_checkpoint=False)
 
 model.save_pretrained(OUTPUT_PATH)
+tokenizer.save_pretrained(OUTPUT_PATH)
