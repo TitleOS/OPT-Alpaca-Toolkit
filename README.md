@@ -1,6 +1,6 @@
 # OPT Alpaca Training (WIP)
 
-Training and inference code for [OPT](https://ai.facebook.com/blog/democratizing-access-to-large-scale-language-models-with-opt-175b/) models based on the [Alpaca](https://crfm.stanford.edu/2023/03/13/alpaca.html) training protocol.
+Training and inference code for [OPT](https://ai.facebook.com/blog/democratizing-access-to-large-scale-language-models-with-opt-175b/) models based on the [Alpaca](https://crfm.stanford.edu/2023/03/13/alpaca.html) instruct format.
 ### Usage
 ```
 python train.py --base-model huggingface/modelname --dataset huggingface/datasetname --epochs number of epochs to train --output trained model name
