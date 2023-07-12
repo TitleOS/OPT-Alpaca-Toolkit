@@ -10,6 +10,17 @@ python train.py --base-model huggingface/modelname --dataset huggingface/dataset
 python train.py --base-model facebook/opt-1.3b --dataset "psmathur/alpaca_orca" --output opt-orca-1.3b --epochs 3
 ```
 
+### Merging LoRA Checkpoint
+```
+python merge_lora_weight.py --base-model huggingface/modelname --output mergedmodel --checkpoint my-opt-lora
+```
+### Example
+```
+python merge_lora_weight.py --base-model facebook/opt-350m --output seahorse-350m --checkpoint opt-orca-350m
+```
+
+
+
 ### Outputs
 ```
 Instruction: Tell me about alpacas.
