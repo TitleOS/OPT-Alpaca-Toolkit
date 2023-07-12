@@ -53,7 +53,8 @@ LORA_DROPOUT = 0.05
 if torch.cuda.is_available():
     print('Torch Detected\n')
     print('Number of GPUs: ', torch.cuda.device_count())
-    print('First GPU Name: ', torch.cuda.get_device_name(0))
+    for i in range(torch.cuda.device_count()):
+        print(f'GPU Name [{i}]: ', torch.cuda.get_device_name(i))
 model = OPTForCausalLM.from_pretrained(
         BASE_MODEL,
         device_map="auto"
