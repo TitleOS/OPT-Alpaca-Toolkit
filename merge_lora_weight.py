@@ -47,6 +47,7 @@ deloreanized_sd = {
 OPTForCausalLM.save_pretrained(
     base_model, OUTPUT_MODEL + "_ckpt", state_dict=deloreanized_sd, max_shard_size="400MB"
 )
+tokenizer.save_pretrained(OUTPUT_MODEL + "_ckpt")
 print("Saved HuggingFace model to", OUTPUT_MODEL + "_ckpt")
 
 # now load as usual

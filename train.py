@@ -13,6 +13,7 @@ parser.add_argument('--base-model', type=str, help='Set Base Model')
 parser.add_argument('--dataset', type=str, help='Set Data Path')
 parser.add_argument('--output', type=str, help='Set the output model path')
 parser.add_argument('--epochs', type=int, help='Set the number of epochs')
+parser.add_argument('--steps', type=int, help='Set the number of steps')
 args = parser.parse_args()
 
 if args.base_model:
@@ -39,6 +40,12 @@ if args.epochs:
 else:
     EPOCHS = 3
     print("No epochs count provided, defaulting to 3")
+if args.steps:
+    STEP_COUNT = args.steps
+    print(f"Learning Steps: {EPOCHS}")
+else:
+    STEP_COUNT = 10000
+    print("No step count provided, defaulting to 10k")
 
 MICRO_BATCH_SIZE = 4
 BATCH_SIZE = 128
@@ -131,7 +138,7 @@ trainer = transformers.Trainer(
         per_device_train_batch_size=MICRO_BATCH_SIZE,
         gradient_accumulation_steps=GRADIENT_ACCUMULATION_STEPS,
         warmup_steps=100,
-        max_steps=10000,
+        max_steps=STEP_COUNT,
         num_train_epochs=EPOCHS,
         learning_rate=LEARNING_RATE,
         fp16=USE_FP16,
