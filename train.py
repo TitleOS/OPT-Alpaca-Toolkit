@@ -49,12 +49,25 @@ CUTOFF_LEN = 256
 LORA_R = 8
 LORA_ALPHA = 16
 LORA_DROPOUT = 0.05
+USE_FP16 = True
+USE_BF16 = False
 
 if torch.cuda.is_available():
     print('Torch & Cuda Detected')
     print('Number of GPUs: ', torch.cuda.device_count())
     for i in range(torch.cuda.device_count()):
         print(f'GPU Name [{i}]: ', torch.cuda.get_device_name(i))
+
+amp_supported = torch.cuda.is_available() and hasattr(torch.cuda, "amp")
+
+if amp_supported:
+     print(f"AMP Supported: {amp_supported}")
+     bfloat16_supported = torch.cuda.is_bf16_supported()
+     print(f"BFLOAT16 Supported: {bfloat16_supported}")
+     if bfloat16_supported:
+          USE_FP16 = False
+          USE_BF16 = True
+
 model = OPTForCausalLM.from_pretrained(
         BASE_MODEL,
         device_map="auto"
@@ -129,7 +142,8 @@ trainer = transformers.Trainer(
         max_steps=10000,
         num_train_epochs=EPOCHS,
         learning_rate=LEARNING_RATE,
-        fp16=True,
+        fp16=USE_FP16,
+        bf16=USE_BF16,
         logging_steps=10,
         output_dir=OUTPUT_PATH,
         save_steps=200,
