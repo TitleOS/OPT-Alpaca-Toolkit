@@ -89,7 +89,7 @@ tokenizer.save_pretrained(OUTPUT_PATH)
 config = LoraConfig(
     r=LORA_R,
     lora_alpha=LORA_ALPHA,
-    target_modules=["q_proj", "v_proj"],
+    target_modules=["all-linear"],
     lora_dropout=LORA_DROPOUT,
     bias="none",
     task_type="CAUSAL_LM",
