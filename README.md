@@ -7,7 +7,11 @@ python train.py --base-model huggingface/modelname --dataset huggingface/dataset
 ```
 ### Example
 ```
-python train.py --base-model facebook/opt-1.3b --dataset "psmathur/alpaca_orca" --output opt-orca-1.3b --epochs 3
+python train.py --base-model facebook/opt-1.3b --dataset "psmathur/alpaca_orca" --output opt-orca-1.3b --epochs 3 --learning_rate 1e-5
+```
+
+```
+python train.py --base-model facebook/opt-1.3b --dataset "psmathur/alpaca_orca" --output opt-orca-1.3b --steps 10000 --learning_rate 1e-3
 ```
 
 ### Merging LoRA Checkpoint
@@ -18,6 +22,7 @@ python merge_lora_weight.py --base-model huggingface/modelname --output mergedmo
 ```
 python merge_lora_weight.py --base-model facebook/opt-350m --output seahorse-350m --checkpoint opt-orca-350m
 ```
+
 
 
 
