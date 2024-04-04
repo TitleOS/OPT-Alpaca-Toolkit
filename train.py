@@ -1,19 +1,19 @@
-import os
 import argparse
 import torch
 import torch.nn as nn
-import bitsandbytes as bnb
 from datasets import load_dataset
 import transformers
-from transformers import AutoTokenizer, AutoConfig, OPTForCausalLM, AutoTokenizer
-from peft import prepare_model_for_int8_training, LoraConfig, get_peft_model
+from transformers import AutoTokenizer, OPTForCausalLM, GPT2Tokenizer
+from peft import LoraConfig, get_peft_model
 
 parser = argparse.ArgumentParser(description='Training script')
 parser.add_argument('--base-model', type=str, help='Set Base Model')
 parser.add_argument('--dataset', type=str, help='Set Data Path')
 parser.add_argument('--output', type=str, help='Set the output model path')
-parser.add_argument('--epochs', type=int, help='Set the number of epochs')
-parser.add_argument('--steps', type=int, help='Set the number of steps')
+parser.add_argument('--learning_rate', type=str, help="Set the learning rate, default is 1e-3.", default=1e-3)
+group = parser.add_mutually_exclusive_group()
+group.add_argument('--epochs', type=int, help='Set the number of epochs', default=3)
+group.add_argument('--steps', type=int, help='Set the number of steps', default=10000)
 args = parser.parse_args()
 
 if args.base_model:
@@ -34,29 +34,20 @@ if args.output:
 else:
     OUTPUT_PATH = "mymodel-finetuned"
     print("No output path provided, defaulting to mymodel-finetuned")
-if args.epochs:
-    EPOCHS = args.epochs
-    print(f"Epochs: {EPOCHS}")
-else:
-    EPOCHS = 3
-    print("No epochs count provided, defaulting to 3")
-if args.steps:
-    STEP_COUNT = args.steps
-    print(f"Learning Steps: {EPOCHS}")
-else:
-    STEP_COUNT = 10000
-    print("No step count provided, defaulting to 10k")
 
 MICRO_BATCH_SIZE = 4
 BATCH_SIZE = 128
 GRADIENT_ACCUMULATION_STEPS = BATCH_SIZE // MICRO_BATCH_SIZE
-LEARNING_RATE = 1e-4
-CUTOFF_LEN = 256
-LORA_R = 8
-LORA_ALPHA = 16
+#LEARNING_RATE = 1e-3
+LEARNING_RATE = args.learning_rate
+CUTOFF_LEN = 512
+LORA_R = 256
+LORA_ALPHA = 256
 LORA_DROPOUT = 0.05
 USE_FP16 = True
 USE_BF16 = False
+EPOCHS = args.epochs
+STEP_COUNT = args.steps
 
 if torch.cuda.is_available():
     print("Torch & Cuda Detected")
@@ -78,7 +69,7 @@ model = OPTForCausalLM.from_pretrained(
         BASE_MODEL,
         device_map="auto"
     )
-tokenizer = AutoTokenizer.from_pretrained(
+tokenizer = GPT2Tokenizer.from_pretrained(
     BASE_MODEL,
     model_max_length=CUTOFF_LEN,
     padding_side="right",
@@ -89,7 +80,7 @@ tokenizer.save_pretrained(OUTPUT_PATH)
 config = LoraConfig(
     r=LORA_R,
     lora_alpha=LORA_ALPHA,
-    target_modules=["all-linear"],
+    target_modules=["q_proj", "v_proj", "k_proj", "out_proj"],
     lora_dropout=LORA_DROPOUT,
     bias="none",
     task_type="CAUSAL_LM",
@@ -131,25 +122,31 @@ data = data.shuffle().map(
     )
 )
 
+args_dict = {
+    'per_device_train_batch_size': MICRO_BATCH_SIZE,
+    'gradient_accumulation_steps': GRADIENT_ACCUMULATION_STEPS,
+    'warmup_steps': 100,
+    'learning_rate': LEARNING_RATE,
+    'fp16': USE_FP16,
+    'bf16': USE_BF16,
+    'logging_steps': 10,
+    'output_dir': OUTPUT_PATH,
+    'save_strategy': "epoch",
+    'save_total_limit': 3,
+}
+
+if EPOCHS is not None:
+    args_dict['num_train_epochs'] = EPOCHS
+else:
+    args_dict['max_steps'] = STEP_COUNT
+
 trainer = transformers.Trainer(
     model=model,
     train_dataset=data["train"],
-    args=transformers.TrainingArguments(
-        per_device_train_batch_size=MICRO_BATCH_SIZE,
-        gradient_accumulation_steps=GRADIENT_ACCUMULATION_STEPS,
-        warmup_steps=100,
-        max_steps=STEP_COUNT,
-        num_train_epochs=EPOCHS,
-        learning_rate=LEARNING_RATE,
-        fp16=USE_FP16,
-        bf16=USE_BF16,
-        logging_steps=10,
-        output_dir=OUTPUT_PATH,
-        save_steps=200,
-        save_total_limit=3,
-    ),
+    args=transformers.TrainingArguments(**args_dict),
     data_collator=transformers.DataCollatorForLanguageModeling(tokenizer, mlm=False),
 )
+
 model.config.use_cache = False
 trainer.train(resume_from_checkpoint=False)
 
